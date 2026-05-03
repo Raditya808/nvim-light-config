@@ -34,7 +34,6 @@ vim.keymap.set("i", "<C-v>", '<Esc>"+pa', opts)
 keymap("n", "<TAB>", "<cmd>bn<CR>", opts)
 keymap("n", "<S-TAB>", "<cmd>bp<CR>", opts)
 
-
 keymap("n", "<leader>cb", "<cmd>lua require('nvchad.tabufline').close_buffer()<CR>", opts)
 
 -- =============================================================
@@ -74,20 +73,17 @@ _G.toggle_dashboard = function()
 end
 vim.keymap.set("n", "<leader>h", "<cmd>lua toggle_dashboard()<CR>", opts)
 
-
 -- =============================================================
 -- UNDO + REDO new  
 -- =============================================================
 --
 -- Ctrl + Z untuk Undo
-keymap("n", "<C-z>", "u", opts)
-keymap("i", "<C-z>", "<Esc>u", opts)
-
+vim.keymap.set("n", "<C-z>", "<cmd>undo<CR>", opts)
+vim.keymap.set("i", "<C-z>", "<cmd>undo<CR>", opts)
 
 -- Ctrl + Y untuk Redo
-keymap("n", "<C-y>", "<C-r>", opts)
-keymap("i", "<C-y>", "<Esc><C-r>", opts)
-
+vim.keymap.set("n", "<C-y>", "<cmd>redo<CR>", opts)
+vim.keymap.set("i", "<C-y>", "<cmd>redo<CR>", opts)
 
 -- =============================================================
 -- SUPER FAST SCROLL (Normal & Visual Mode)
@@ -99,8 +95,9 @@ vim.opt.ttyfast = true
 
 -- Shortcut buat scroll layar (bukan kursor) biar tetep sinkron
 vim.keymap.set({ "n", "v" }, "<C-e>", "3<C-e>", { desc = "Scroll down screen faster" })
-vim.keymap.set({ "n", "v" }, "<C-y>", "3<C-y>", { desc = "Scroll up screen faster" })
 
+-- PERBAIKAN: <C-y> diganti ke <C-u> agar tidak bentrok dengan tombol Redo di atas
+vim.keymap.set({ "n", "v" }, "<C-u>", "3<C-y>", { desc = "Scroll up screen faster" })
 
 -- Klik Esc 2 kali buat keluar dari terminal mode ke normal mode
 vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
