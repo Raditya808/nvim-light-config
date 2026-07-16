@@ -7,9 +7,12 @@ return {
 
   config = function()
     require("nightfox").setup({
-      option = {
-          dim_inactive = true,
+      options = {
+        dim_inactive = true,
+        transparent = false,
       },
     })
+
+    vim.cmd("colorscheme nightfox")
   end,
 }
