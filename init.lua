@@ -98,7 +98,7 @@ require("lazy").setup({
   { import = "plugins" },
 }, lazy_config)
 
--- load theme
+-- load theme (cached base46 defaults/statusline)
 dofile(vim.g.base46_cache .. "defaults")
 dofile(vim.g.base46_cache .. "statusline")
 
@@ -111,5 +111,3 @@ vim.schedule(function()
   -- to set up old keymaps in new neovim
   require "configs.keymaps"
 end)
-
-

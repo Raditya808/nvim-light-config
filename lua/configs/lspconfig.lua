@@ -1,19 +1,20 @@
--- 1. Load default NvChad
+-- Load default NvChad LSP helpers (if available)
 pcall(require, "nvchad.configs.lspconfig")
 
 local nvlsp = require "nvchad.configs.lspconfig"
 local ok, lspconfig = pcall(require, "lspconfig")
-
 if not ok then return end
 
--- 2. language without ruff support 
-local servers = { 
-  "html", "cssls", "ts_ls", "clangd", 
-  "pyright", "jdtls", "rust_analyzer", 
-  "gopls", "intelephense", "emmet_ls" 
+-- Reduce diagnostic updates while inserting to avoid frequent UI updates
+vim.diagnostic.config({ update_in_insert = false, virtual_text = false })
+
+-- List of servers to setup
+local servers = {
+  "html", "cssls", "ts_ls", "clangd",
+  "pyright", "jdtls", "rust_analyzer",
+  "gopls", "intelephense", "emmet_ls"
 }
 
--- 3. Looping Setup
 for _, lsp in ipairs(servers) do
   local opts = {
     on_attach = nvlsp.on_attach,
@@ -21,15 +22,19 @@ for _, lsp in ipairs(servers) do
     capabilities = nvlsp.capabilities,
   }
 
-  -- hypertext untuk Flask (Python) DAN JavaScript/TypeScript (innerHTML)
+  -- Add debounce flag so LSP doesn't process every keystroke
+  opts.flags = opts.flags or {}
+  opts.flags.debounce_text_changes = 150 -- ms, adjust 100-300 as needed
+
+  -- hypertext for html/emmet
   if lsp == "html" or lsp == "emmet_ls" then
-    opts.filetypes = { 
+    opts.filetypes = {
       "html", "python", "jinja.html", "htmldjango",
-      "javascript", "typescript", "javascriptreact", "typescriptreact" -- <-- Tambah ini di sini
+      "javascript", "typescript", "javascriptreact", "typescriptreact"
     }
   end
 
-  -- Konfigurasi Python venv untuk pyright
+  -- pyright venv config
   if lsp == "pyright" then
     opts.settings = {
       python = {
@@ -42,5 +47,28 @@ for _, lsp in ipairs(servers) do
     }
   end
 
-  lspconfig[lsp].setup(opts)
+  -- Fix TypeScript/JavaScript auto-import/file completion issues and avoid file-kind completions
+  if lsp == "ts_ls" then
+    opts.settings = {
+      typescript = { autoImportFileExcludePatterns = { "**/*" } },
+      javascript = { autoImportFileExcludePatterns = { "**/*" } },
+    }
+    opts.handlers = {
+      ["textDocument/completion"] = function(err, result, ctx, config)
+        if result and result.items then
+          for _, item in ipairs(result.items) do
+            if item.kind == 1 then -- File kind completion
+              item.insertText = nil
+            end
+          end
+        end
+        return result
+      end
+    }
+  end
+
+  -- Safe-guard: ensure server exists in lspconfig before calling setup
+  if lspconfig[lsp] then
+    lspconfig[lsp].setup(opts)
+  end
 end
